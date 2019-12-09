@@ -1,0 +1,304 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Simple AWS EKS Stack'
+
+Parameters:
+
+  VpcId:
+    Description: The VPC id of the VPC the cluster will live in.
+    Type: AWS::EC2::VPC::Id
+  SubnetIds:
+    Description: The subnets the cluster will span.
+    Type: List<AWS::EC2::Subnet::Id>
+
+  ClusterName:
+    Description: Name of the EKS cluster.
+    Type: String
+    Default: UdacityCapstoneCluster
+  NodeGroupName:
+    Description: Unique identifier for the worker node group.
+    Type: String
+    Default: UdacityCapstoneNodeGroup
+
+  KeyName:
+    Description: The EC2 key pair name for SSH access.
+    Type: AWS::EC2::KeyPair::KeyName
+
+  K8sImageId:
+    Description: AWS SSM parameter of the AMI ID for the worker node instances.
+    Type: "AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>"
+    Default: /aws/service/eks/optimized-ami/1.14/amazon-linux-2/recommended/image_id
+  WorkerInstanceType:
+    Description: EC2 instance type (size) for the worker node instances.
+    Type: String
+    Default: t3.medium
+
+  MinWorkerNodes:
+    Description: Minimum number of worker nodes.
+    Type: Number
+    Default: 2
+  MaxWorkerNodes:
+    Description: Maximum number of worker nodes in ASG
+    Type: Number
+    Default: 5
+  MaxNodePods:
+    Description: Maximum number of pods on a node.
+    Type: Number
+    Default: 8
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      -
+        Label:
+          default: "EKS VPC Network Configuration"
+        Parameters:
+          - VpcId
+          - Subnetids
+      -
+        Label:
+          default: "K8s Node Configuration"
+        Parameters:
+          - ClusterName
+          - NodeGroupName
+          - KeyName
+          - K8sImageId
+          - WorkerInstanceType
+          - MinWorkerNodes
+          - MaxWorkerNodes
+          - MaxNodePods
+
+Resources:
+  # NETWORKING -------------------------------
+  EksControlPlaneSG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Sg for cluster communication with worker nodes
+      VpcId: !Ref VpcId
+  ClusterControlPlaneSGIngress:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      Description: Allow pods to communicate with the cluster API Server
+      GroupId: !Ref EksControlPlaneSG
+      SourceSecurityGroupId: !Ref WorkerSG
+      IpProtocol: -1
+      FromPort: 0
+      ToPort: 65535
+  ClusterControlPlaneSGIngressSSL:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      Description: Allow pods to communicate with the cluster API Server
+      GroupId: !Ref EksControlPlaneSG
+      SourceSecurityGroupId: !Ref WorkerSG
+      IpProtocol: -1
+      FromPort: 443
+      ToPort: 443
+  ControlPlaneEgressToWorkerSG:
+    Type: AWS::EC2::SecurityGroupEgress
+    DependsOn: WorkerSG
+    Properties:
+      Description: Allow the cluster control plane to communicate with worker nodes and pods
+      GroupId: !Ref EksControlPlaneSG
+      DestinationSecurityGroupId: !Ref WorkerSG
+      IpProtocol: tcp
+      FromPort: 1025
+      ToPort: 65535
+  ControlPlaneEgressSSLToWorkerSG:
+    Type: AWS::EC2::SecurityGroupEgress
+    DependsOn: WorkerSG
+    Properties:
+      Description: Allow the cluster control plane to communicate with worker nodes and pods
+      GroupId: !Ref EksControlPlaneSG
+      DestinationSecurityGroupId: !Ref WorkerSG
+      IpProtocol: tcp
+      FromPort: 443
+      ToPort: 443
+
+  WorkerSG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group for the worker nodes in the cluster
+      VpcId: !Ref VpcId
+      Tags:
+        - Key: !Sub kubernetes.io/cluster/${ClusterName}
+          Value: owned
+  WorkerSGIngress:
+    Type: AWS::EC2::SecurityGroupIngress
+    DependsOn: WorkerSG
+    Properties:
+      Description: Allow nodes to communicate with each other
+      GroupId: !Ref WorkerSG
+      SourceSecurityGroupId: !Ref WorkerSG
+      IpProtocol: -1
+      FromPort: 0
+      ToPort: 65535
+  WorkerSGFromControlPlaneIngress:
+    Type: AWS::EC2::SecurityGroupIngress
+    DependsOn: WorkerSG
+    Properties:
+      Description: Allow worker nodes and pods to recieve communication from the cluster control plane
+      GroupId: !Ref WorkerSG
+      SourceSecurityGroupId: !Ref EksControlPlaneSG
+      IpProtocol: tcp
+      FromPort: 1025
+      ToPort: 65535
+  WorkerSGFromControlPlaneIngressSSL:
+    Type: AWS::EC2::SecurityGroupIngress
+    DependsOn: WorkerSG
+    Properties:
+      Description: Allow worker nodes and pods to recieve communication from the cluster control plane over ssl
+      GroupId: !Ref WorkerSG
+      SourceSecurityGroupId: !Ref EksControlPlaneSG
+      IpProtocol: tcp
+      FromPort: 443
+      ToPort: 443
+
+  # IAM -------------------------------
+  ClusterRole:
+    Description: Allows EKS to manage clusters on your behalf.
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+            Effect: Allow
+            Principal:
+              Service:
+                - eks.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns: 
+        - arn:aws:iam::aws:policy/AmazonEKSClusterPolicy
+        - arn:aws:iam::aws:policy/AmazonEKSServicePolicy
+  WorkereRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: K8sWorkerRole
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+            Action:
+            - sts:AssumeRole
+      Path: '/'
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
+        - arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy
+        - arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy
+        - arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy
+        - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly
+      Policies:
+        - PolicyName: k8-policy
+          PolicyDocument:
+            Statement:
+            - Effect: Allow
+              Action:
+                - 'logs:CreateLogStream'
+                - 'logs:PutLogEvents'
+              Resource: '*'
+            - Effect: Allow
+              Action:
+                - 'secretsmanager:Describe*'
+                - 'secretsmanager:Get*'
+                - 'secretsmanager:List*'
+              Resource: '*'
+  K8sWorkerInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      InstanceProfileName: K8sWorkerInstanceProfile
+      Path: '/'
+      Roles:
+        - !Ref WorkereRole
+
+  # Cluster -------------------------------
+  K8sCluster:
+    Type: 'AWS::EKS::Cluster'
+    Properties:
+      Name: !Ref ClusterName
+      Version: '1.14'
+      RoleArn: !GetAtt ClusterRole.Arn
+      ResourcesVpcConfig:
+        SecurityGroupIds:
+          - !Ref EksControlPlaneSG
+        SubnetIds: !Ref SubnetIds
+
+  WorkerNodeLaunchConfig:
+    Type: AWS::AutoScaling::LaunchConfiguration
+    DependsOn: K8sCluster
+    Properties:
+      KeyName: !Ref KeyName
+      ImageId: !Ref K8sImageId
+      InstanceType: !Ref WorkerInstanceType
+      IamInstanceProfile: !Ref K8sWorkerInstanceProfile
+      AssociatePublicIpAddress: true
+      SecurityGroups:
+        - Ref: WorkerSG
+      BlockDeviceMappings:
+        - DeviceName: /dev/xvda
+          Ebs:
+            DeleteOnTermination: true
+            VolumeSize: 25
+            VolumeType: gp2
+      UserData: !Base64
+        "Fn::Sub": |
+          #!/bin/bash
+          set -o xtrace
+          /etc/eks/bootstrap.sh ${ClusterName}
+          /opt/aws/bin/cfn-signal --exit-code $? \
+                  --stack ${AWS::StackName}
+                  --resource NodeGroup
+                  --region ${AWS::Region}
+
+  WorkerNodeGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      DesiredCapacity: 3
+      LaunchConfigurationName: !Ref WorkerNodeLaunchConfig
+      MinSize: !Ref MinWorkerNodes
+      MaxSize: !Ref MaxWorkerNodes
+      VPCZoneIdentifier: !Ref SubnetIds
+      Tags:
+        - Key: Name
+          PropagateAtLaunch: true
+          Value: !Sub ${ClusterName}-${NodeGroupName}-Node
+        - Key: !Sub kubernetes.io/cluster/${ClusterName}
+          PropagateAtLaunch: "true"
+          Value: owned
+    UpdatePolicy:
+      AutoScalingRollingUpdate:
+        MaxBatchSize: 1
+        MinInstancesInService: 1
+        PauseTime: PT5M
+
+
+Outputs:
+
+  K8sClusterName:
+    Value: !Ref K8sCluster
+    Description: Cluster Name
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-ClusterName"
+
+  K8sClusterArn:
+    Value: !GetAtt K8sCluster.Arn
+    Description: Cluster Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-ClusterArn"
+
+  K8sClusterEndpoint:
+    Value: !GetAtt K8sCluster.Endpoint
+    Description: Cluster Endpoint
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-ClusterEndpoint"
+
+  EksControlPlaneSG:
+    Value: !Ref EksControlPlaneSG
+    Description: Cluster control plane security group
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-ClusterControlPlaneSecurityGroup"
