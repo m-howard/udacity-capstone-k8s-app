@@ -11,15 +11,6 @@ pipeline {
 
   stages {
 
-    stage('Initialize') {
-      steps {
-        sh """
-          aws eks update-kubeconfig --name ${env.CLUSTER_NAME}
-          kubectl get svc
-        """
-      }
-    }
-
     stage('Build') {
       steps {
         sh "docker build --target dependencies -t ${env.PROJECT} ./app"
@@ -28,7 +19,7 @@ pipeline {
 
     stage('Validate') {
       steps {
-        sh "bash ./scripts/validate-cf-templates.sh infra"
+        sh "bash ./scripts/validate-cf-templates.sh infra/cfn"
         sh "docker build --target test -t ${env.PROJECT} ./app"
         sh "docker run --rm -i hadolint/hadolint < ./app/Dockerfile"
       }
@@ -36,8 +27,6 @@ pipeline {
 
     stage('Publish Artifacts') {
       steps {
-        sh "echo 'publishing image artifact'"
-
         sh """
           docker build --target release -t ${DOCKER_CREDENTIALS_USR}/${env.PROJECT} ./app
           docker tag ${env.PROJECT} ${DOCKER_CREDENTIALS_USR}/${env.PROJECT}:${BUILD_NUMBER}
@@ -50,7 +39,7 @@ pipeline {
         """
 
         sh """
-          aws s3 sync infra s3://${STACK_S3_BUCKET}
+          aws s3 sync infra/cfn s3://${STACK_S3_BUCKET}
         """
       }
     }
@@ -58,7 +47,7 @@ pipeline {
     stage('Sync Infrastructure') {
       steps {
         sh """
-          bash ./scripts/sync-cf-stack.sh us-west-2 ${env.STACK_NAME} --template-url https://s3.amazonaws.com/${STACK_S3_BUCKET}/eks.yaml --parameters file://infra/params.json --capabilities CAPABILITY_NAMED_IAM
+          bash ./scripts/sync-cf-stack.sh us-west-2 ${env.STACK_NAME} --template-url https://s3.amazonaws.com/${STACK_S3_BUCKET}/eks.yaml --parameters file://infra/cfn/params.json --capabilities CAPABILITY_NAMED_IAM
         """
       }
     }
@@ -66,8 +55,9 @@ pipeline {
     stage('Deploy Service') {
       steps {
         sh """
-          echo 'deploying service'
-          kubectl get ns UdacityCapstone
+          aws eks update-kubeconfig --name ${env.CLUSTER_NAME}
+          kubectl apply -f ./infra/deployment.yaml
+          kube get pods
         """
       }
     }
