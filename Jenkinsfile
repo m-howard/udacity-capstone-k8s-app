@@ -54,11 +54,24 @@ pipeline {
 
     stage('Deploy Service') {
       steps {
+        script{
+          def lastSuccessfulBuildID = 0
+          def build = currentBuild.previousBuild
+          while (build != null) {
+            if (build.result == "SUCCESS")
+            {
+              lastSuccessfulBuildID = build.id as Integer
+              break
+            }
+            build = build.previousBuild
+          }
+        }
         sh """
           aws eks update-kubeconfig --name ${env.CLUSTER_NAME}
 
           sed -i \"s/<BUILD_NUMBER>/${BUILD_NUMBER}/g\" ./infra/k8s/controller.yaml
           kubectl apply -f ./infra/k8s/controller.yaml
+          kubectl rolling-update ${PROJECT} -f ./infra/k8s/controller.yaml
           sleep 30
 
           kubectl get pods
@@ -66,7 +79,7 @@ pipeline {
           sleep 30
 
           kubectl get services
-          kubectl rollout status deployment ${PROJECT}
+          kubectl rollout status -f ./infra/k8s/controller.yaml
         """
       }
     }
