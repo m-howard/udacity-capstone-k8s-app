@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: udacity-capstone-app
-          image: mhoward22/udacity-capstone-app:latest
+          image: mhoward22/devops-capstone-app:latest
           ports:
             - containerPort: 8080
               name: http-server
