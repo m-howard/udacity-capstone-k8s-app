@@ -37,13 +37,12 @@ pipeline {
 
         sh "docker build --target release -t ${DOCKER_NAMESPACE}/${env.PROJECT} ./app"
 
-        script {
-          docker.withRegistry('', DOCKER_CREDENTIALS) {
-            def dockerImage = docker.image("${DOCKER_NAMESPACE}/${env.PROJECT}")
-            dockerImage.push("${BUILD_NUMBER}")
-            dockerImage.push('latest')
-          }
-        }
+        sh "docker tag ${env.PROJECT} ${DOCKER_NAMESPACE}/${env.PROJECT}"
+
+        sh """
+          echo ${DOCKER_CREDENTIALS_PSW} | docker login --username ${DOCKER_CREDENTIALS_USR} --password-stdin
+          docker push ${DOCKER_NAMESPACE}/${env.PROJECT}
+        """
       }
     }
 
