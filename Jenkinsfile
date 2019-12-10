@@ -37,12 +37,11 @@ pipeline {
 
         sh "docker build --target release -t ${env.PROJECT} ./app"
 
-        sh "docker tag ${env.PROJECT} ${DOCKER_NAMESPACE}/${env.PROJECT}:${BUILD_NUMBER}"
+        sh "docker tag ${env.PROJECT} ${DOCKER_NAMESPACE}/${env.PROJECT}"
 
         sh """
-          docker login --username ${DOCKER_CREDENTIALS_USR} --password ${DOCKER_CREDENTIALS_PSW}
-          docker push ${DOCKER_NAMESPACE}/${env.PROJECT}:${BUILD_NUMBER}
-          docker push ${DOCKER_NAMESPACE}/${env.PROJECT}:latest
+          echo ${DOCKER_CREDENTIALS_PSW} | docker login --username ${DOCKER_CREDENTIALS_USR} --password-stdin
+          docker push ${DOCKER_NAMESPACE}/${env.PROJECT}
         """
       }
     }
@@ -70,7 +69,6 @@ pipeline {
   post {
     always {
       sh "docker rmi ${env.PROJECT}"
-      sh "docker rmi ${DOCKER_NAMESPACE}/${env.PROJECT}"
     }
   }
 }
