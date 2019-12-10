@@ -7,5 +7,5 @@ spec:
     app: udacity-capstone-app
   ports:
   - port: 8080
-    targetPort: httpServer
+    targetPort: http-server
   type: LoadBalancer
