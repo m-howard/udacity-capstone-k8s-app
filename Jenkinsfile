@@ -39,7 +39,7 @@ pipeline {
 
         sh "docker tag ${DOCKER_NAMESPACE}/${env.PROJECT} ${DOCKER_NAMESPACE}/${env.PROJECT}:${BUILD_NUMBER}"
 
-        withDockerRegistry([ credentialsId: 'dockerhub', url: "" ]) {
+        withDockerRegistry([ credentialsId: 'dockerhub', url: "https://index.docker.io/v1" ]) {
           sh "docker push ${DOCKER_NAMESPACE}/${env.PROJECT}:${BUILD_NUMBER}"
           sh "docker push ${DOCKER_NAMESPACE}/${env.PROJECT}:latest"
         }
