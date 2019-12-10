@@ -69,7 +69,7 @@ pipeline {
   post {
     always {
       sh "docker rmi ${env.PROJECT}"
-      sh "docker rmi ${DOCKER_NAMESPACE}/${env.PROJECT}"
+      sh "docker rmi ${DOCKER_CREDENTIALS_USR}/${env.PROJECT}:${BUILD_NUMBER}"
     }
   }
 }
