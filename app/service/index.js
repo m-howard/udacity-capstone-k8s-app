@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const appVersion = require('../package.json');
 
 const PORT = process.env.SERVER_PORT || 8080;
 const app = express();
@@ -14,7 +15,7 @@ app.use(cors({ origin: '*' }));
 app.get('/healthcheck', (req, res) => res
   .status(200)
   .json({
-    version: require('../package.json').version,
+    version: appVersion.version,
     environment: process.env.NODE_ENV || 'development',
   }));
 
