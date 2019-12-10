@@ -13,7 +13,10 @@ pipeline {
 
     stage('Initialize') {
       steps {
-        sh "aws eks --region us-west-2 update-kubeconfig --name ${env.CLUSTER_NAME}"
+        sh """
+          aws eks update-kubeconfig --name ${env.CLUSTER_NAME}
+          kubectl get svc
+        """
       }
     }
 
