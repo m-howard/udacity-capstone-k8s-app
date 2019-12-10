@@ -56,8 +56,12 @@ pipeline {
       steps {
         sh """
           aws eks update-kubeconfig --name ${env.CLUSTER_NAME}
-          kubectl apply -f ./infra/k8s/deployment.yaml
-          kube get pods
+          kubectl apply -f ./infra/k8s/controller.yaml
+          sleep 30
+          kubectl get pods
+          kubectl apply -f ./infra/k8s/service.yaml
+          sleep 30
+          kubectl get services
         """
       }
     }
