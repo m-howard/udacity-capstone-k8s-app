@@ -31,7 +31,7 @@ if [[ -f "$1" ]] ; then
 
   else
 
-    echo -e "\nFile mast have the \".tamplate\" or \".yaml\" extention"
+    echo -e "\nFile mast have the \".template\" or \".yaml\" extention"
 
   fi
 elif [[ -d "$1" ]] ; then

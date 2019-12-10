@@ -9,11 +9,11 @@
   },
   {
     "ParameterKey": "VpcId",
-    "ParameterValue": "vpc-077a8e9fa2d56af49"
+    "ParameterValue": "vpc-0a342304890fa3a65"
   },
   {
     "ParameterKey": "SubnetIds",
-    "ParameterValue": "subnet-0d30eafdcb6dd7196, subnet-06daf89c1c56df89d"
+    "ParameterValue": "subnet-09dbd64d760c78d0b, subnet-0576ae6f8c0afc228"
   },
   {
     "ParameterKey": "KeyName",
