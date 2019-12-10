@@ -130,7 +130,7 @@ Resources:
     Properties:
       ClusterName: !Ref ClusterName
       NodegroupName: !Ref NodeGroupName
-      NodeRole: !Ref WorkerRole
+      NodeRole: !GetAtt WorkerRole.Arn
       AmiType: 'AL2_x86_64'
       InstanceTypes:
         - !Ref WorkerInstanceType
