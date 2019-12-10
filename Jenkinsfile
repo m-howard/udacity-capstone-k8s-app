@@ -2,32 +2,45 @@ pipeline {
   agent any
 
   environment {
-    STACK_NAME = 'UdacityCapstoneK8s'
+    PROJECT = 'devops-capstone-app'
+    DOCKER_REGISTRY = 'mdhowar22/${env.PROJECT}'
+    DOCKER_CREDENTIALS = 'dockerhub'
+    STACK_NAME = 'CapstoneK8sCluster'
   }
 
   stages {
 
     stage('Initialize') {
       steps {
-        sh "echo test ${env.STACK_NAME}"
+        // sh 'aws eks update-kubeconfig --name ${env.PROJECT}'
+        sh 'echo Will initialize kubeconfig'
       }
     }
 
     stage('Build') {
       steps {
-        sh "echo 'building docker'"
+        sh 'docker build --target dependencies -t ${env.PROJECT} ./app'
       }
     }
 
     stage('Validate') {
       steps {
-        sh "echo 'validating'"
+        sh 'docker build --target test -t ${env.PROJECT} ./app'
+        sh 'docker run --rm -i hadolint/hadolint < ./app/Dockerfile'
       }
     }
 
     stage('Publish Artifact') {
       steps {
         sh "echo 'publishing image artifact'"
+
+        script {
+          dockerImage = docker.build("${env.DOCKER_REGISTRY}", "./app")
+          docker.withRegistry('', DOCKER_CREDENTIALS) {
+            dockerImage.push("${BUILD_NUMBER}")
+            dockerImage.push('latest')
+          }
+        }
       }
     }
 

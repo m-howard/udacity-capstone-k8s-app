@@ -14,11 +14,11 @@ Parameters:
   ClusterName:
     Description: Name of the EKS cluster.
     Type: String
-    Default: UdacityCapstoneCluster
+    Default: CapstoneK8sCluster
   NodeGroupName:
     Description: Unique identifier for the worker node group.
     Type: String
-    Default: UdacityCapstoneNodeGroup
+    Default: CapstoneK8sClusterNodeGroup
 
   KeyName:
     Description: The EC2 key pair name for SSH access.
@@ -64,7 +64,7 @@ Metadata:
           - MaxNodePods
 
 Resources:
-  # IAM -------------------------------
+  # IAM -----------------------------------
   ClusterRole:
     Description: Allows EKS to manage clusters on your behalf.
     Type: AWS::IAM::Role
@@ -81,48 +81,29 @@ Resources:
         - arn:aws:iam::aws:policy/AmazonEKSClusterPolicy
         - arn:aws:iam::aws:policy/AmazonEKSServicePolicy
   WorkerRole:
-    Type: AWS::IAM::Role
+    Type: "AWS::IAM::Role"
     Properties:
-      RoleName: K8sWorkerRole
       AssumeRolePolicyDocument:
-        Version: '2012-10-17'
+        Version: "2012-10-17"
         Statement:
           - Effect: Allow
             Principal:
               Service:
                 - ec2.amazonaws.com
             Action:
-            - sts:AssumeRole
-      Path: '/'
+              - "sts:AssumeRole"
       ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
-        - arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy
-        - arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy
-        - arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy
-        - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly
-      Policies:
-        - PolicyName: k8-policy
-          PolicyDocument:
-            Statement:
-            - Effect: Allow
-              Action:
-                - 'logs:CreateLogStream'
-                - 'logs:PutLogEvents'
-              Resource: '*'
-            - Effect: Allow
-              Action:
-                - 'secretsmanager:Describe*'
-                - 'secretsmanager:Get*'
-                - 'secretsmanager:List*'
-              Resource: '*'
+        - "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
+        - "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
+        - "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
 
   # Cluster -------------------------------
   K8sCluster:
     Type: 'AWS::EKS::Cluster'
     Properties:
       Name: !Ref ClusterName
-      Version: '1.14'
       RoleArn: !GetAtt ClusterRole.Arn
+      Version: 1.14
       ResourcesVpcConfig:
         SubnetIds: !Ref SubnetIds
   WorkerNodeGroup:
@@ -132,7 +113,6 @@ Resources:
       ClusterName: !Ref ClusterName
       NodegroupName: !Ref NodeGroupName
       NodeRole: !GetAtt WorkerRole.Arn
-      AmiType: 'AL2_x86_64'
       InstanceTypes:
         - !Ref WorkerInstanceType
       DiskSize: 25
@@ -144,6 +124,7 @@ Resources:
         MinSize: !Ref MinWorkerNodes
         MaxSize: !Ref MaxWorkerNodes
       ForceUpdateEnabled: true
+      Version: 1.14
       Labels:
         Project: !Sub '${AWS::StackName}'
 

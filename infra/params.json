@@ -1,11 +1,11 @@
 [
   {
     "ParameterKey": "ClusterName",
-    "ParameterValue": "UdacityCapstoneCluster"
+    "ParameterValue": "CapstoneK8sCluster"
   },
   {
     "ParameterKey": "NodeGroupName",
-    "ParameterValue": "UdacityCapstoneNodeGroup"
+    "ParameterValue": "CapstoneK8sClusterNodeGroup"
   },
   {
     "ParameterKey": "VpcId",
