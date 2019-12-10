@@ -8,31 +8,45 @@ pipeline {
   stages {
 
     stage('Initialize') {
-      sh "echo test ${env.STACK_NAME}"
+      steps {
+        sh "echo test ${env.STACK_NAME}"
+      }
     }
 
     stage('Build') {
-      sh "echo 'building docker'"
+      steps {
+        sh "echo 'building docker'"
+      }
     }
 
     stage('Validate') {
-      sh "echo 'validating'"
+      steps {
+        sh "echo 'validating'"
+      }
     }
 
     stage('Publish Artifact') {
-      sh "echo 'publishing image artifact'"
+      steps {
+        sh "echo 'publishing image artifact'"
+      }
     }
 
     stage('Security Scan') {
-      sh "echo 'running security scan'"
+      steps {
+        sh "echo 'running security scan'"
+      }
     }
 
     stage('Sync Infrastructure') {
-      sh "echo 'syncing infrastructure'"
+      steps {
+        sh "echo 'syncing infrastructure'"
+      }
     }
 
     stage('Deploy Service') {
-      sh "echo 'deploying service'"
+      steps {
+        sh "echo 'deploying service'"
+      }
     }
 
   }
