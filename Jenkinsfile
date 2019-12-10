@@ -19,14 +19,14 @@ pipeline {
 
     stage('Build') {
       steps {
-        sh 'docker build --target dependencies -t ${env.PROJECT} ./app'
+        sh "docker build --target dependencies -t ${env.PROJECT} ./app"
       }
     }
 
     stage('Validate') {
       steps {
-        sh 'docker build --target test -t ${env.PROJECT} ./app'
-        sh 'docker run --rm -i hadolint/hadolint < ./app/Dockerfile'
+        sh "docker build --target test -t ${env.PROJECT} ./app"
+        sh "docker run --rm -i hadolint/hadolint < ./app/Dockerfile"
       }
     }
 
