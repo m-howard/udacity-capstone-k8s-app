@@ -6,14 +6,14 @@ pipeline {
     DOCKER_NAMESPACE = 'mdhowar22'
     DOCKER_CREDENTIALS = 'dockerhub'
     STACK_NAME = 'CapstoneK8sCluster'
+    CLUSTER_NAME = 'CapstoneK8sCluster'
   }
 
   stages {
 
     stage('Initialize') {
       steps {
-        // sh 'aws eks update-kubeconfig --name ${env.PROJECT}'
-        sh 'echo Will initialize kubeconfig'
+        sh 'aws eks update-kubeconfig --name ${env.CLUSTER_NAME}'
       }
     }
 
@@ -34,9 +34,11 @@ pipeline {
       steps {
         sh "echo 'publishing image artifact'"
 
+        sh "docker build --target release -t ${env.PROJECT} ./app"
+
         script {
-          dockerImage = docker.build("${env.DOCKER_NAMESPACE}/${env.PROJECT}", "./app")
           docker.withRegistry('', DOCKER_CREDENTIALS) {
+            def dockerImage = docker.image("${env.PROJECT}")
             dockerImage.push("${BUILD_NUMBER}")
             dockerImage.push('latest')
           }
