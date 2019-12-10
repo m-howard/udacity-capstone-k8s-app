@@ -37,7 +37,7 @@ pipeline {
 
         sh "docker build --target release -t ${DOCKER_NAMESPACE}/${env.PROJECT} ./app"
 
-        withDockerRegister([ credentialsId: 'dockerhub', url: "" ]) {
+        withDockerRegistry([ credentialsId: 'dockerhub', url: "" ]) {
           sh "docker push ${DOCKER_NAMESPACE}/${env.PROJECT}:${BUILD_NUMBER}"
           sh "docker push ${DOCKER_NAMESPACE}/${env.PROJECT}:latest"
         }
