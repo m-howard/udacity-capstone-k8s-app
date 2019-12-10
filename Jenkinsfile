@@ -13,7 +13,8 @@ pipeline {
 
     stage('Initialize') {
       steps {
-        sh 'aws eks update-kubeconfig --name ${env.CLUSTER_NAME}'
+        // sh "aws eks update-kubeconfig --name ${env.CLUSTER_NAME}"
+        sh "echo TODO: Intialization stage"
       }
     }
 
