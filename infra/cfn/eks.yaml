@@ -127,6 +127,7 @@ Resources:
         SubnetIds: !Ref SubnetIds
   WorkerNodeGroup:
     Type: 'AWS::EKS::Nodegroup'
+    DependsOn: K8sCluster
     Properties:
       ClusterName: !Ref ClusterName
       NodegroupName: !Ref NodeGroupName

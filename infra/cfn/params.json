@@ -1,0 +1,22 @@
+[
+  {
+    "ParameterKey": "ClusterName",
+    "ParameterValue": "UdacityCapstoneCluster"
+  },
+  {
+    "ParameterKey": "NodeGroupName",
+    "ParameterValue": "UdacityCapstoneNodeGroup"
+  },
+  {
+    "ParameterKey": "VpcId",
+    "ParameterValue": "vpc-077a8e9fa2d56af49"
+  },
+  {
+    "ParameterKey": "SubnetIds",
+    "ParameterValue": "subnet-0d30eafdcb6dd7196, subnet-06daf89c1c56df89d"
+  },
+  {
+    "ParameterKey": "KeyName",
+    "ParameterValue": "pipeline"
+  }
+]
