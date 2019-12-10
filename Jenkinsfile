@@ -35,9 +35,9 @@ pipeline {
       steps {
         sh "echo 'publishing image artifact'"
 
-        sh "docker build --target release -t ${DOCKER_NAMESPACE}/${env.PROJECT} ./app"
+        sh "docker build --target release -t ${env.PROJECT} ./app"
 
-        sh "docker tag ${DOCKER_NAMESPACE}/${env.PROJECT} ${DOCKER_NAMESPACE}/${env.PROJECT}:${BUILD_NUMBER}"
+        sh "docker tag ${env.PROJECT} ${DOCKER_NAMESPACE}/${env.PROJECT}:${BUILD_NUMBER}"
 
         sh """
           docker login --username ${DOCKER_CREDENTIALS_USR} --password ${DOCKER_CREDENTIALS_PSW}
