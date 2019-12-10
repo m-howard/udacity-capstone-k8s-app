@@ -35,11 +35,11 @@ pipeline {
       steps {
         sh "echo 'publishing image artifact'"
 
-        sh "docker build --target release -t ${env.PROJECT} ./app"
+        sh "docker build --target release -t ${DOCKER_NAMESPACE}/${env.PROJECT} ./app"
 
         script {
           docker.withRegistry('', DOCKER_CREDENTIALS) {
-            def dockerImage = docker.image("${env.PROJECT}")
+            def dockerImage = docker.image("${DOCKER_NAMESPACE}/${env.PROJECT}")
             dockerImage.push("${BUILD_NUMBER}")
             dockerImage.push('latest')
           }
