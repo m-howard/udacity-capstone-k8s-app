@@ -11,17 +11,29 @@ pipeline {
       sh "echo test ${env.STACK_NAME}"
     }
 
-    stage('Build') {}
+    stage('Build') {
+      sh "echo 'building docker'"
+    }
 
-    stage('Validate') {}
+    stage('Validate') {
+      sh "echo 'validating'"
+    }
 
-    stage('Publish Artifact') {}
+    stage('Publish Artifact') {
+      sh "echo 'publishing image artifact'"
+    }
 
-    stage('Security Scan') {}
+    stage('Security Scan') {
+      sh "echo 'running security scan'"
+    }
 
-    stage('Sync Infrastructure') {}
+    stage('Sync Infrastructure') {
+      sh "echo 'syncing infrastructure'"
+    }
 
-    stage('Deploy Service') {}
+    stage('Deploy Service') {
+      sh "echo 'deploying service'"
+    }
 
   }
 }
