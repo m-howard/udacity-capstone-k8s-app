@@ -4,7 +4,7 @@
   "description": "Simple devops capstone webhooks application",
   "main": "service/index.js",
   "scripts": {
-    "start": "nodemon ./service/index.js",
+    "start": "node ./service/index.js",
     "lint": "eslint service/**",
     "test": "mocha"
   },

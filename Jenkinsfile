@@ -60,6 +60,7 @@ pipeline {
           sleep 30
           kubectl get pods
           kubectl apply -f ./infra/k8s/service.yaml
+          kubectl rolling-update ${PROJECT} -f ./infra/k8s/controller.yaml
           sleep 30
           kubectl get services
         """
