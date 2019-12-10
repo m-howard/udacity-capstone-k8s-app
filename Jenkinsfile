@@ -3,7 +3,7 @@ pipeline {
 
   environment {
     PROJECT = 'devops-capstone-app'
-    DOCKER_REGISTRY = 'mdhowar22/${env.PROJECT}'
+    DOCKER_NAMESPACE = 'mdhowar22'
     DOCKER_CREDENTIALS = 'dockerhub'
     STACK_NAME = 'CapstoneK8sCluster'
   }
@@ -35,7 +35,7 @@ pipeline {
         sh "echo 'publishing image artifact'"
 
         script {
-          dockerImage = docker.build("${env.DOCKER_REGISTRY}", "./app")
+          dockerImage = docker.build("${env.DOCKER_NAMESPACE}/${env.PROJECT}", "./app")
           docker.withRegistry('', DOCKER_CREDENTIALS) {
             dockerImage.push("${BUILD_NUMBER}")
             dockerImage.push('latest')
@@ -62,5 +62,12 @@ pipeline {
       }
     }
 
+  }
+
+  post {
+    always {
+      sh "docker rmi ${env.PROJECT}"
+      sh "docker rmi ${env.DOCKER_REGISTRY}"
+    }
   }
 }
