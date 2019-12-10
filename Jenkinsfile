@@ -4,7 +4,7 @@ pipeline {
   environment {
     PROJECT = 'devops-capstone-app'
     DOCKER_NAMESPACE = 'mdhowar22'
-    DOCKER_CREDENTIALS = 'dockerhub'
+    DOCKER_CREDENTIALS = credentials('dockerhub')
     STACK_NAME = 'CapstoneK8sCluster'
     CLUSTER_NAME = 'CapstoneK8sCluster'
   }
@@ -37,13 +37,13 @@ pipeline {
 
         sh "docker build --target release -t ${DOCKER_NAMESPACE}/${env.PROJECT} ./app"
 
-        script {
-          docker.withRegistry('https://index.docker.io/v1', 'dockerhub') {
-            def dockerImage = docker.image("${DOCKER_NAMESPACE}/${env.PROJECT}")
-            dockerImage.push("${BUILD_NUMBER}")
-            dockerImage.push("latest")
-          }
-        }
+        sh "docker tag ${DOCKER_NAMESPACE}/${env.PROJECT} ${DOCKER_NAMESPACE}/${env.PROJECT}:${BUILD_NUMBER}"
+
+        sh """
+          docker login --username ${DOCKER_CREDENTIALS_USR} --password ${DOCKER_CREDENTIALS_PSW}
+          docker push ${DOCKER_NAMESPACE}/${env.PROJECT}:${BUILD_NUMBER}
+          docker push ${DOCKER_NAMESPACE}/${env.PROJECT}:latest
+        """
       }
     }
 
