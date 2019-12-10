@@ -70,7 +70,7 @@ pipeline {
   post {
     always {
       sh "docker rmi ${env.PROJECT}"
-      sh "docker rmi ${env.DOCKER_REGISTRY}"
+      sh "docker rmi ${DOCKER_NAMESPACE}/${env.PROJECT}"
     }
   }
 }
