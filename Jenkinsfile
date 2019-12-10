@@ -37,10 +37,12 @@ pipeline {
 
         sh "docker build --target release -t ${DOCKER_NAMESPACE}/${env.PROJECT} ./app"
 
-        docker.withRegistry('https://registry.hub.docker.com', 'dockerhub') {
-          def dockerImage = docker.image("${DOCKER_NAMESPACE}/${env.PROJECT}")
-          dockerImage.push("${BUILD_NUMBER}")
-          dockerImage.push("latest")
+        script {
+          docker.withRegistry('https://registry.hub.docker.com', 'dockerhub') {
+            def dockerImage = docker.image("${DOCKER_NAMESPACE}/${env.PROJECT}")
+            dockerImage.push("${BUILD_NUMBER}")
+            dockerImage.push("latest")
+          }
         }
       }
     }
