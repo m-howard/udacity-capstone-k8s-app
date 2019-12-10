@@ -65,7 +65,10 @@ pipeline {
 
     stage('Deploy Service') {
       steps {
-        sh "echo 'deploying service'"
+        sh """
+          echo 'deploying service'
+          kubectl get ns UdacityCapstone
+        """
       }
     }
 
