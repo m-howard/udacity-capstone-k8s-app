@@ -45,17 +45,6 @@ RUN  npm run lint
 
 
 # ============================================================
-# ---- Development ----
-# ============================================================
-FROM dependencies AS development
-
-# Expose port
-EXPOSE 8080
-
-# Start server
-RUN /wait && npm start
-
-# ============================================================
 # ---- Release ----
 # ============================================================
 FROM base AS release
@@ -68,3 +57,15 @@ EXPOSE 8080
 
 # Start server
 CMD ["npm", "run", "start"]
+
+
+# ============================================================
+# ---- Development ----
+# ============================================================
+FROM dependencies AS development
+
+# Expose port
+EXPOSE 8080
+
+# Start server
+RUN /wait && npm start
