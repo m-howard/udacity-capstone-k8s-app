@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: devops-capstone-app
-          image: mhoward22/devops-capstone-app:latest
+          image: mhoward22/devops-capstone-app:<BUILD_NUMBER>
           ports:
             - containerPort: 8080
               name: http-server
