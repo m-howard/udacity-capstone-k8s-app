@@ -3,7 +3,7 @@ pipeline {
 
   environment {
     PROJECT = 'devops-capstone-app'
-    DOCKER_NAMESPACE = 'mhowar22'
+    DOCKER_NAMESPACE = 'mhoward22'
     DOCKER_CREDENTIALS = credentials('dockerhub')
     STACK_NAME = 'CapstoneK8sCluster'
     CLUSTER_NAME = 'CapstoneK8sCluster'
