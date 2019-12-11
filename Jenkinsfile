@@ -60,16 +60,10 @@ pipeline {
           kubectl apply -f ./infra/k8s/service.yaml
           
           kubectl rolling-update ${PROJECT} --image=${DOCKER_CREDENTIALS_USR}/${env.PROJECT}:${BUILD_NUMBER}
-          sleep 30
-
-          kubectl get deployments
-          kubectl get pods
-          kubectl describe pods
-          kubectl set image -f ./infra/k8s/controller.yaml ${env.PROJECT}=${DOCKER_CREDENTIALS_USR}/${env.PROJECT}:${BUILD_NUMBER}
-          sleep 30
 
           kubectl get pods
           kubectl get services
+          kubectl describe pods
         """
       }
     }
