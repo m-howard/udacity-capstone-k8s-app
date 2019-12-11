@@ -29,13 +29,12 @@ pipeline {
       steps {
         sh """
           docker build --target release -t ${DOCKER_CREDENTIALS_USR}/${env.PROJECT} ./app
-          docker tag ${env.PROJECT} ${DOCKER_CREDENTIALS_USR}/${env.PROJECT}:${BUILD_NUMBER}
+          docker tag ${DOCKER_CREDENTIALS_USR}/${env.PROJECT} ${DOCKER_CREDENTIALS_USR}/${env.PROJECT}:${BUILD_NUMBER}
         """
 
         sh """
           echo ${DOCKER_CREDENTIALS_PSW} | docker login --username ${DOCKER_CREDENTIALS_USR} --password-stdin
           docker push ${DOCKER_CREDENTIALS_USR}/${env.PROJECT}:${BUILD_NUMBER}
-          docker push ${DOCKER_CREDENTIALS_USR}/${env.PROJECT}:latest
         """
 
         sh """
@@ -54,18 +53,6 @@ pipeline {
 
     stage('Deploy Service') {
       steps {
-        script{
-          def lastSuccessfulBuildID = 0
-          def build = currentBuild.previousBuild
-          while (build != null) {
-            if (build.result == "SUCCESS")
-            {
-              lastSuccessfulBuildID = build.id as Integer
-              break
-            }
-            build = build.previousBuild
-          }
-        }
         sh """
           aws eks update-kubeconfig --name ${env.CLUSTER_NAME}
 
