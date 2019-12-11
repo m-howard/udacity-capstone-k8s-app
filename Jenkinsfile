@@ -70,7 +70,6 @@ pipeline {
 
           kubectl get pods
           kubectl get services
-          kubectl rollout status -f ./infra/k8s/controller.yaml
         """
       }
     }

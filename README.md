@@ -14,8 +14,8 @@
 * https://medium.com/@gustavo.guss/jenkins-building-docker-image-and-sending-to-registry-64b84ea45ee9
 
 
-## Security Scanning
-* https://github.com/quay/clair
-* https://geekflare.com/anchore-container-security-scanner/
-* https://github.com/nightfurys/anchore-jenkins-example
-* 
+## Kubernetes
+* https://betsol.com/2018/11/devops-using-jenkins-docker-and-kubernetes/
+* https://github.com/kubernetes/examples/tree/master/guestbook-go#step-three
+* https://kubernetes.io/docs/tutorials/kubernetes-basics/update/update-interactive/
+* https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#set
