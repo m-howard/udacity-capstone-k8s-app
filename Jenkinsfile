@@ -57,13 +57,18 @@ pipeline {
           aws eks update-kubeconfig --name ${env.CLUSTER_NAME}
 
           kubectl apply -f ./infra/k8s/controller.yaml
+          kubectl apply -f ./infra/k8s/service.yaml
+          
           kubectl rolling-update ${PROJECT} --image=${DOCKER_CREDENTIALS_USR}/${env.PROJECT}:${BUILD_NUMBER}
           sleep 30
 
+          kubectl get deployments
           kubectl get pods
-          kubectl apply -f ./infra/k8s/service.yaml
+          kubectl describe pods
+          kubectl set image -f ./infra/k8s/controller.yaml ${env.PROJECT}=${DOCKER_CREDENTIALS_USR}/${env.PROJECT}:${BUILD_NUMBER}
           sleep 30
 
+          kubectl get pods
           kubectl get services
           kubectl rollout status -f ./infra/k8s/controller.yaml
         """
