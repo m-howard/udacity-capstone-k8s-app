@@ -1,11 +1,11 @@
 apiVersion: v1
 kind: ReplicationController
 metadata:
-  name: devops-capstone-app-<BUILD_NUMBER>
+  name: devops-capstone-app
 spec:
   replicas: 5
   selector:
-    app: devops-capstone-app-<BUILD_NUMBER>
+    app: devops-capstone-app
   template:
     metadata:
       name: devops-capstone-app
@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: devops-capstone-app
-          image: mhoward22/devops-capstone-app:<BUILD_NUMBER>
+          image: mhoward22/devops-capstone-app:latest
           ports:
             - containerPort: 8080
               name: http-server

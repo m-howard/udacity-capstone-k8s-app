@@ -69,9 +69,8 @@ pipeline {
         sh """
           aws eks update-kubeconfig --name ${env.CLUSTER_NAME}
 
-          sed -i \"s/<BUILD_NUMBER>/${BUILD_NUMBER}/g\" ./infra/k8s/controller.yaml
           kubectl apply -f ./infra/k8s/controller.yaml
-          kubectl rolling-update ${PROJECT} -f ./infra/k8s/controller.yaml
+          kubectl rolling-update ${PROJECT} --image=${DOCKER_CREDENTIALS_USR}/${env.PROJECT}:${BUILD_NUMBER}
           sleep 30
 
           kubectl get pods
